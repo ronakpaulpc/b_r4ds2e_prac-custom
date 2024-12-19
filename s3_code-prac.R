@@ -59,6 +59,30 @@ df$month    # check
 
 
 # 16.3 General Social Survey ----------------------------------------------
+# The rest of this chapter uses forcats::gss_cat. It’s a sample of data 
+# from the General Social Survey. The survey has thousands of questions. 
+# So in gss_cat Hadley selected a handful that will illustrate some 
+# common challenges you’ll encounter when working with factors.
+gss_cat
+help("gss_cat")
+glimpse(gss_cat)
+
+# When factors are stored in a tibble, you can’t see their levels so easily.
+# One way to view them is with count():
+gss_cat |> count(marital)
+gss_cat |> count(race)
+gss_cat |> count(relig)
+
+# gss_cat |> fct_count(race)        # gives error
+fct_count(gss_cat$race)             # but this works
+
+
+# 16.4 Modifying the factor order -----------------------------------------
+
+
+
+
+
 # TBC ####
 
 
