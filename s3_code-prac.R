@@ -78,9 +78,49 @@ fct_count(gss_cat$race)             # but this works
 
 
 # 16.4 Modifying the factor order -----------------------------------------
+# It’s often useful to change the order of factor levels in a visualization. 
+# For example, imagine you want to explore the average number of hours spent 
+# watching TV per day across religions:
+relig_summary <- gss_cat |> 
+    group_by(relig) |> 
+    summarize(
+        tvhours = mean(tvhours, na.rm = T),
+        n = n()
+    )
+ggplot(data = relig_summary, aes(x = tvhours, y = relig)) +
+    geom_point()
+# It is hard to read this plot because there’s no overall pattern.
 
+# We can improve it by reordering the levels of relig using fct_reorder().
+ggplot(
+    data = relig_summary, 
+    aes(x = tvhours, y = fct_reorder(relig, tvhours))
+) +
+    geom_point()
 
+# As you start making more complicated transformations, we recommend
+# moving them out of aes() and into a separate mutate() step.
+relig_summary |> 
+    mutate(relig = fct_reorder(relig, tvhours)) |> 
+    ggplot(aes(x = tvhours, y = relig)) +
+    geom_point()
 
+# What if we create a similar plot looking at how average age 
+# varies across reported income level?
+rincome_summary <- gss_cat |> 
+    group_by(rincome) |> 
+    summarize(
+        age = mean(age, na.rm = T),
+        n = n()
+    )
+rincome_summary
+ggplot(
+    data = rincome_summary, 
+    aes(x = age, y = fct_reorder(rincome, age))
+) +
+    geom_point()
+# Here, arbitrarily reordering the levels isn’t a good idea! That’s because 
+# rincome already has a principled order that we shouldn’t mess with.
 
 
 # TBC ####
