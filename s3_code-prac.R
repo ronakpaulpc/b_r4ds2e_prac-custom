@@ -160,6 +160,12 @@ gss_cat |>
     mutate(marital = fct_infreq(marital)) |> 
     ggplot(aes(x = marital)) + geom_bar()
 # Combine it with fct_rev() if you want them in increasing frequency.
+gss_cat |> 
+    mutate(marital = marital |> fct_infreq() |> fct_rev()) |> 
+    ggplot(aes(x = marital)) + geom_bar()
+
+
+# Modifying factor levels -------------------------------------------------
 
 
 # TBC ####
