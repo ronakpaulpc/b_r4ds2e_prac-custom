@@ -122,6 +122,45 @@ ggplot(
 # Here, arbitrarily reordering the levels isn’t a good idea! That’s because 
 # rincome already has a principled order that we shouldn’t mess with.
 
+# However, it does make sense to pull “Not applicable” to the front with 
+# the other special levels. You can use fct_relevel() for that.
+ggplot(
+    data = rincome_summary, 
+    aes(x = age, y = fct_relevel(rincome, "Not applicable"))
+) +
+    geom_point()
+
+# Another reordering type is useful when you are coloring the lines on a plot. 
+# fct_reorder2(.f, .x, .y) reorders the factor .f by the .y values associated 
+# with the largest .x values.
+by_age <- gss_cat |> 
+    filter(!is.na(age)) |> 
+    count(age, marital) |> 
+    group_by(age) |> 
+    mutate(prop = n / sum(n))
+by_age
+
+ggplot(data = by_age, aes(x = age, y = prop, colour = marital)) +
+    geom_line(linewidth = 1.5) +
+    scale_colour_brewer(palette = "Set1") +
+    labs(colour = "Marital")
+
+ggplot(
+    data = by_age,
+    aes(x = age, y = prop, colour = fct_reorder2(marital, age, prop))
+) +
+    geom_line(linewidth = 1.5) +
+    scale_color_brewer(palette = "Set1") +
+    labs(colour = "Marital")
+
+# Finally, for bar plots, you can use fct_infreq() to order levels in 
+# decreasing frequency.
+gss_cat |> ggplot(aes(x = marital)) + geom_bar()
+gss_cat |> 
+    mutate(marital = fct_infreq(marital)) |> 
+    ggplot(aes(x = marital)) + geom_bar()
+# Combine it with fct_rev() if you want them in increasing frequency.
+
 
 # TBC ####
 
