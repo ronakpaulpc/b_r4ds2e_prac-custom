@@ -166,6 +166,50 @@ gss_cat |>
 
 
 # Modifying factor levels -------------------------------------------------
+# More powerful than changing the level orders is changing their values. 
+# This allows you to clarify labels for publication, and collapse levels 
+# for high-level displays. 
+
+# The most general and powerful tool is fct_recode(). It allows you to 
+# recode, or change, the value of each level.
+gss_cat |> count(partyid)
+# The levels in partyid var are terse and inconsistent. 
+
+# Let’s tweak them to be longer and clearer. Like other tidyverse fns, the 
+# new values go on the left and the old values go on the right.
+gss_cat |> 
+    mutate(
+        partyid = fct_recode(
+            partyid,
+            "Republican, strong"    = "Strong republican",
+            "Republican, weak"      = "Not str republican",
+            "Independent, near rep" = "Ind,near rep",
+            "Independent, near dem" = "Ind,near dem",
+            "Democrat, weak"        = "Not str democrat",
+            "Democrat, strong"      = "Strong democrat"
+        )
+    ) |> 
+    count(partyid)
+# fct_recode() will leave the levels that aren’t explicitly mentioned as is
+# and will warn you if you accidentally refer to a level that doesn’t exist.
+
+# To combine groups assign multiple old levels to the same new level:
+gss_cat |> 
+    mutate(
+        partyid = fct_recode(
+            partyid,
+            "Republican, strong"    = "Strong republican",
+            "Republican, weak"      = "Not str republican",
+            "Independent, near rep" = "Ind,near rep",
+            "Independent, near dem" = "Ind,near dem",
+            "Democrat, weak"        = "Not str democrat",
+            "Democrat, strong"      = "Strong democrat",
+            "Other"                 = "No answer",
+            "Other"                 = "Don't know",
+            "Other"                 = "Other party"
+        )
+    ) |> 
+    count(partyid)
 
 
 # TBC ####
