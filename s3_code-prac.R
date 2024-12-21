@@ -211,6 +211,45 @@ gss_cat |>
     ) |> 
     count(partyid)
 
+# Use fct_collapse() if you want to collapse a lot of levels.
+gss_cat |> mutate(
+    partyid = fct_collapse(
+        partyid,
+        "Other"         = c("No answer", "Don't know", "Other party"),
+        "Republican"    = c("Strong republican", "Not str republican"),
+        "Independent"   = c("Ind,near dem", "Ind,near rep", "Independent"),
+        "Democrat"      = c("Strong democrat", "Not str democrat")
+    )
+) |> 
+    count(partyid)
+
+# Sometimes you just want to lump together the small groups to make a plot 
+# or table simpler. That’s the job of the fct_lump_*() family of functions.
+# fct_lump_lowfreq() progressively lumps the smallest groups categories 
+# into “Other”, always keeping “Other” as the smallest category.
+gss_cat |> count(relig)
+gss_cat |> mutate(
+    relig = fct_lump_lowfreq(relig)
+) |> 
+    count(relig)
+
+# We can use the fct_lump_n() to specify that we want exactly n groups:
+gss_cat |> mutate(
+    relig = fct_lump_n(relig, n = 10)
+) |> 
+    count(relig)
+
+
+# 16.6 Ordered factors ----------------------------------------------------
+x <- ordered(c("a", "b", "c"))
+x
+
+
+# 16.7 Summary ------------------------------------------------------------
+# NO CODE.
+
+
+
 
 # TBC ####
 
