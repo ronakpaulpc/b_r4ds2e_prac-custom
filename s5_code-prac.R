@@ -107,26 +107,72 @@ files[[3]]
 
 
 # ** 26.3.3 purrr::map() and list_rbind() ====
+# The code to collect those data frames in a list “by hand” is basically 
+# just as tedious to type as code that reads the files one-by-one. Happily 
+# we can use purrr::map(). map() is similar toacross(), but instead of doing 
+# something to each column in a data frame, it does something to each 
+# element of a vector.
+
+# We use map() to get a list of 12 dataframes.
+files <- map(paths, read_excel)
+length(files)
+files[[1]]
+# Now we combine that list of data frames into a single dataframe.
+list_rbind(files)
+# Altly, we could do both steps at once in a pipeline:
+paths |> 
+    map(read_excel) |> 
+    list_rbind()
+
+# If we need to pass extra arguments to read_excel we need to use it in
+# the functional form.
+paths |> 
+    map(
+        function(path) read_excel(path, n_max = 1)
+    ) |> 
+    list_rbind()
 
 
+# ** 26.3.4 Data in the path ====
+# Sometimes the name of the file is data itself. To get that column into 
+# the final dataframe, we need to do two things:
 
+# First, we name the vector of paths using set_names() and basename().
+# Use this code
+paths |> set_names(basename)
+# ERROR: When used with map() as the path is shortened and gives error.
+# paths |> basename() |> set_names()
+# Those names are automatically carried along by all the map functions 
+# so the list of data frames will have those same names.
+files <- paths |> 
+    set_names(basename) |> 
+    map(read_excel)
+# We can also use [[ to extract elements by name.
+files[[3]]
+files[["1962.xlsx"]]
 
+# Then we use the names_to argument to list_rbind() to tell it to save the 
+# names into a new column called year then use readr::parse_number() to 
+# extract the number from the string.
+paths |> 
+    set_names(basename) |> 
+    map(read_excel) |> 
+    list_rbind(names_to = "year") |> 
+    mutate(year = parse_number(year))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# In more complicated cases, there might be other variables stored in the 
+# directory name, or maybe the file name contains multiple bits of data. 
+# In that case, use set_names() (without any arguments) to record the 
+# full path, and then use tidyr::separate_wider_delim() and friends to 
+# turn them into useful columns.
+paths |> 
+    set_names() |> 
+    map(read_excel) |> 
+    list_rbind(names_to = "year") |> 
+    separate_wider_delim(year, delim = "/", names = c(NA, "dir", "file")) |> 
+    separate_wider_delim(file, delim = ".", names = c("file", "ext")) |> 
+    mutate(year = parse_number(file)) |> 
+    select(-c(dir, file, ext))
 
 
 
