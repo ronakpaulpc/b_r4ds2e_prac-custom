@@ -20,6 +20,7 @@ library(tidyverse)
 library(readxl)
 library(here)
 library(rio)
+library(vctrs)
 
 
 # 26.2 Modifying multiple columns -----------------------------------------
@@ -109,9 +110,9 @@ files[[3]]
 # ** 26.3.3 purrr::map() and list_rbind() ====
 # The code to collect those data frames in a list “by hand” is basically 
 # just as tedious to type as code that reads the files one-by-one. Happily 
-# we can use purrr::map(). map() is similar toacross(), but instead of doing 
-# something to each column in a data frame, it does something to each 
-# element of a vector.
+# we can use purrr::map(). map() is similar to across(), but instead of doing 
+# something to each column in a dataframe, it does something to each element 
+# of a vector.
 
 # We use map() to get a list of 12 dataframes.
 files <- map(paths, read_excel)
@@ -175,35 +176,107 @@ paths |>
     select(-c(dir, file, ext))
 
 
+# ** 26.3.5 Save your work ====
+# After getting a nice tidy data frame, it’s a great time to save your work:
+gapminder <- paths |> 
+    set_names(basename) |> 
+    map(read_excel) |> 
+    list_rbind(names_to = "year") |> 
+    mutate(year = parse_number(year))
+gapminder
+write_csv(gapminder, "gapminder.csv")
+# Now when you come back to this problem in the future, you can read in a 
+# single csv file. 
 
 
+# ** 26.3.6 Many simple iterations ====
+# Here we were lucky enough to get a tidy dataset. In most cases, you will
+# need to do some additional tidying. There are two ways.
+
+# Do one round of iteration with a complex function.
+paths
+process_file <- function(path) {
+    df <- read_csv(path)
+    df |> 
+        filter(!is.na(id)) |> 
+        mutate(id = tolower(id)) |> 
+        pivot_longer(jan:dec, names_to = "month")
+}
+paths |> 
+    map(process_file) |> 
+    list_rbind()
+
+# Do multiple rounds of iteration with simple functions.
+paths |> 
+    map(read_csv) |> 
+    map(\(df) df |> filter(!is.na(id))) |> 
+    map(\(df) df |> mutate(id = to_lower(id))) |> 
+    map(\(df) df |> pivot_longer(jan:dec, names_to = "month"))
+# We recommend this approach because it stops you getting fixated on getting 
+# the first file right before moving on to the rest. By considering all of 
+# the data when doing tidying and cleaning, you’re more likely to think 
+# holistically and end up with a higher quality result.
+
+# Altly, we could optimize, by binding all the dataframes together earlier. 
+# Then you can rely on regular dplyr behaviour:
+paths |> 
+    map(read_csv) |> 
+    list_rbind() |> 
+    filter(!is.na(id)) |> 
+    mutate(id = tolower(id)) |> 
+    pivot_longer(jan:dec, names_to = "month")
 
 
+# ** 26.3.7 Heterogeneous data ====
+# Sometimes it’s not possible to go from map() straight to list_rbind() 
+# because the data frames are so heterogeneous that list_rbind() either 
+# fails or yields a data frame that’s not very useful.
+
+# It’s still useful to start by loading all of the files:
+files <- paths |> 
+    set_names(basename) |> 
+    map(read_excel)
+
+# Then a very useful strategy is to capture the structure of the dataframes 
+# so that you can explore it using your data science skills. One way to do 
+# so is with this handy df_types function6 that returns a tibble with 
+# one row for each column:
+df_types <- function(df) {
+    tibble(
+        col_names = names(df),
+        col_type = map_chr(df, vctrs::vec_ptype_full),
+        n_miss = map_int(df, \(x) sum(is.na(x)))
+    )
+}
+df_types(gapminder)
+# This makes it easy to verify whether the gapminder spreadsheets are 
+# heterogeneous.
+files |> 
+    map(df_types) |> 
+    list_rbind(names_to = "file_name") |> 
+    select(-c(n_miss)) |> 
+    pivot_wider(names_from = col_names, values_from = col_type)
+# If the files have heterogeneous formats, you might need to do more 
+# processing before you can successfully merge them. 
 
 
+# ** 26.3.8 Handling failures ====
+# TBC ####
 
 
+# 26.4 Saving multiple outputs --------------------------------------------
+# Here we learn how to take one or more R objects and save it into one 
+# or more files. We’ll explore this challenge using three examples:
+# 1. Saving multiple data frames into one database.
+# 2. Saving multiple data frames into multiple .csv files.
+# 3. Saving multiple plots to multiple .png files.
 
 
+# 26.4.1 Writing to a database ====
+# TBC ####
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# 26.4.2 Writing csv files ====
 
 
 
