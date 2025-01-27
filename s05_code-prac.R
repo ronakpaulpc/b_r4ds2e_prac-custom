@@ -16,11 +16,14 @@
 
 
 # 26.1 Prerequisites ------------------------------------------------------
-library(tidyverse)
-library(readxl)
-library(here)
-library(rio)
-library(vctrs)
+# library(tidyverse)
+# library(readxl)
+# library(here)
+# library(rio)
+# library(vctrs)
+
+library(easypackages)
+libraries("tidyverse", "readxl", "here", "rio", "vctrs")
 
 
 # 26.2 Modifying multiple columns -----------------------------------------
@@ -277,6 +280,102 @@ files |>
 
 
 # 26.4.2 Writing csv files ====
+# Let’s imagine that we want to take the ggplot2::diamonds data and save 
+# one csv file for each clarity. Let's checkout the dataset.
+diamonds |> glimpse()
+diamonds |> count(clarity)
+
+# First, we need to make those individual datasets. There’s one way we 
+# particularly like: group_nest().
+by_clarity <- diamonds |> 
+    group_nest(clarity, keep = T)
+by_clarity
+# This gives us a new tibble with eight rows and two columns. clarity is our 
+# grouping variable and data is a list-column containing one tibble for each 
+# unique value of clarity.
+by_clarity$data[[1]]
+
+# Second, let’s create a column that gives the name of output file.
+by_clarity <- by_clarity |> 
+    mutate(
+        path = str_glue("c26-diamonds-{clarity}.csv")
+    )
+by_clarity
+# So if we were going to save these data frames by hand, we might write 
+# something like:
+write_csv(by_clarity$data[[1]], by_clarity$path[[1]])
+write_csv(by_clarity$data[[2]], by_clarity$path[[2]])
+write_csv(by_clarity$data[[3]], by_clarity$path[[3]])
+write_csv(by_clarity$data[[4]], by_clarity$path[[4]])
+write_csv(by_clarity$data[[5]], by_clarity$path[[5]])
+write_csv(by_clarity$data[[6]], by_clarity$path[[6]])
+write_csv(by_clarity$data[[7]], by_clarity$path[[7]])
+write_csv(by_clarity$data[[8]], by_clarity$path[[8]])
+# There are two arguments that are changing, not just one. That means we need 
+# a new function: map2(), which varies both the first and second arguments.
+map2(by_clarity$data, by_clarity$path, write_csv)
+
+
+# ** 26.4.3 Saving plots ====
+# We can take the same basic approach to create many plots. 
+# Let’s first make a function that draws the plot we want:
+carat_histogram <- function(df) {
+    ggplot(df, aes(x = carat)) + 
+        geom_histogram(binwidth = 0.1)
+}
+carat_histogram(by_clarity$data[[1]])
+# Now we can use map() to create a list of many plots and their eventual 
+# file paths:
+by_clarity <- by_clarity |> 
+    mutate(
+        plot = map(data, carat_histogram),
+        path = str_glue("c26-clarity-{clarity}.png")
+    )
+by_clarity
+print(by_clarity$plot)
+
+# Then we use map2/walk2 with each plot to save output:
+map2(
+    by_clarity$path, by_clarity$plot,
+    \(path, plot) ggsave(path, plot, width = 6, height = 6)
+)
+
+
+# 26.5 Summary ------------------------------------------------------------
+# NO CODE.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
