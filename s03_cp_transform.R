@@ -250,6 +250,32 @@ x
 
 
 
+#_====
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# C19 - Joins -------------------------------------------------------------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# It’s rare that a data analysis involves only a single data frame. 
+# Typically you have many data frames, and you must join them together 
+# to answer the questions that you’re interested in.
+# This chapter will introduce you to two important types of joins:
+#   1. Mutating joins, which add new variables to one dataframe from matching
+#      observations in another.
+#   2. Filtering joins, which filter observations from one dataframe based on 
+#      whether or not they match an observation in another.
+
+
+# 19.1 Prerequisites ------------------------------------------------------
+library(tidyverse)
+library(nycflights13)
+
+
+# 19.2 Keys ---------------------------------------------------------------
+# To understand joins, you need to first understand how two tables can be 
+# connected through a pair of keys, within each table. Here we will learn
+# about keys. We will also learn to check the validity of our keys and 
+# what to do if our table lacks a key.
+
+
 
 # TBC ####
 
