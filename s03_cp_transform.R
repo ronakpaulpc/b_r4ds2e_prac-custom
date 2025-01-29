@@ -265,8 +265,12 @@ x
 
 
 # 19.1 Prerequisites ------------------------------------------------------
+# Installing required package
+# install.packages("eeptools")
 library(tidyverse)
 library(nycflights13)
+# NOTE: eeptools pkg has isid cmd which is similar to STATA's isid cmd.
+library(eeptools)
 
 
 # 19.2 Keys ---------------------------------------------------------------
@@ -275,9 +279,73 @@ library(nycflights13)
 # about keys. We will also learn to check the validity of our keys and 
 # what to do if our table lacks a key.
 
+# ** 19.2.1 Primary and foreign keys ====
+# Every join involves a pair of keys: a primary key and a foreign key. 
+# A primary key is a variable or set of variables that uniquely identifies 
+# each observation. 
+# When more than one variable is needed, the key is called a compound key. 
+
+# In airlines, "carrier" showing airline code is the primary key.
+airlines
+# Ways to check primary key.
+airlines |> isid("carrier")
+nrow(airlines) == length(unique(airlines$carrier))
+# In airports the airport code "faa" is the primary key.
+airports
+# In planes the "tailnum" is the primary key.
+planes
+# In weather the "origin" and "time_hour" is the compound primary key.
+weather
+# primary key check
+weather |> isid(c("origin", "time_hour"))
+
+# A foreign key is a variable (or set of variables) that corresponds to a 
+# primary key in another table.
+
+
+# ** 19.2.2 Checking primary keys ====
+# Now that that we’ve identified the primary keys in each table, it’s good
+# practice to verify that they do indeed uniquely identify each observation.
+
+# One way to do that is to count() the primary keys and look for entries 
+# where n is greater than one.
+planes |> count(tailnum) |> filter(n > 1)
+weather |> count(origin, time_hour) |> filter(n > 1)
+# You should also check for missing values in your primary keys — if a value
+# is missing then it can’t identify an observation!
+planes |> filter(is.na(tailnum))
+weather |> filter(is.na(time_hour) | is.na(origin))
+
+# Altly, we could use isid() from eeptools package.
+planes |> isid("tailnum")
+weather |> isid(c("time_hour", "origin"))
+
+
+# ** 19.2.3 Surrogate keys ====
+
 
 
 # TBC ####
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
