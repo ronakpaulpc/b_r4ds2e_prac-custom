@@ -322,6 +322,29 @@ weather |> isid(c("time_hour", "origin"))
 
 
 # ** 19.2.3 Surrogate keys ====
+# So far we haven’t talked about the primary key for flights. It’s not super
+# important because there are no dataframes that use it as a foreign key.
+# After a little thinking and experimentation we determined that there 
+# are three variables that together uniquely identify each flight.
+flights |> 
+    count(time_hour, carrier, flight) |> 
+    filter(n > 1)
+# Altly, we could use isid
+flights |> isid(c("time_hour", "carrier", "flight"))
+# NOTE: Although, the absence of duplicates automatically make 
+# time_hour-carrier-flight a primary key, it doesn't guarantee it.
+
+# For example, are altitude and latitude a good primary key for airports.
+airports |> count(alt, lat) |> filter(n > 1)
+# Identifying an airport by its altitude and latitude is clearly a bad idea
+# and in general it’s not possible to know from the data alone whether or not
+# a combination of variables makes a good a primary key.
+flights2 <- flights |> 
+    mutate(id = row_number(), .before = 1)
+flights2
+
+
+# 19.3 Basic joins --------------------------------------------------------
 
 
 
